@@ -1,12 +1,14 @@
 <script>
 	import Timer from './Timer.svelte';
 	import Actions from './Actions.svelte';
+
+	export let onAction = () => {};
 </script>
 
 <div class="action-bar space-y-3 xs:space-y-0">
 	<Timer />
 
-	<Actions />
+	<Actions {onAction} />
 </div>
 
 <style>
