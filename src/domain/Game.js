@@ -34,7 +34,7 @@ export class Game {
      * @returns {boolean} 是否成功（locked 格返回 false）
      */
     guess(move) {
-        const [row, col, value] = move;
+        const {row, col, value} = move;
         const before = this.currentSudoku.getGrid()[row][col]; // 记录 before
         const success = this.currentSudoku.guess(move);
         if (!success) return false;
@@ -53,8 +53,6 @@ export class Game {
     undo() {
         if (!this.canUndo()) return;
         const record = this.undoStack.pop();
-        // 直接写回 before 值
-        this.currentSudoku.guess([record.row, record.col, record.before]);
         // 但 undo 操作本身不应被 locked 拒绝，需绕过 locked 检查：
         // 实际上上面的 guess 会被 locked 阻拦，但 undo 本身不应被 locked 拒绝，所以直接改格子值绕过 locked 检查
         this._forceSet(record.row, record.col, record.before);
