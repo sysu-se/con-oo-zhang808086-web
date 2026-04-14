@@ -28,7 +28,7 @@ export class Sudoku {
     /* ─── 返回是否成功，并拒绝修改 locked 格 ─── */
 
     guess(move) {
-        const [row, col, value] = move;
+        const {row, col, value} = move;
         if (this.locked[row][col]) return false;   // 给定格不可修改
         this.grid[row][col] = value;
         return true;
