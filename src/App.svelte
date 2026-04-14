@@ -1,64 +1,65 @@
 <script>
 	import { onMount } from 'svelte';
-<<<<<<< HEAD
-	import { writable } from 'svelte/store';
 	import { validateSencode } from '@sudoku/sencode';
 	import { grid as systemGrid } from '@sudoku/stores/grid';
-	import {cursor} from '@sudoku/stores/cursor';
-	import { createGame, createSudoku } from './domain/index.js';
+	import { cursor } from '@sudoku/stores/cursor';
 	import { modal } from '@sudoku/stores/modal';
-=======
-	import { validateSencode } from '@sudoku/sencode';
-	import game from '@sudoku/game';
-	import { modal } from '@sudoku/stores/modal';
-	import { gameWon } from '@sudoku/stores/game';
->>>>>>> fa3bca5f205acf8b47f69f4a7e7a90476a36c48d
+
+	import { createGameStore } from './domain/gameStore.js';
+
 	import Board from './components/Board/index.svelte';
 	import Controls from './components/Controls/index.svelte';
 	import Header from './components/Header/index.svelte';
 	import Modal from './components/Modal/index.svelte';
 
-<<<<<<< HEAD
-	const initialGrid = Array(9).fill(null).map(() => Array(9).fill(0));
+	// ── 初始化空白盘面 ────────────────────────────────────────────
+	const emptyGrid = Array(9).fill(null).map(() => Array(9).fill(0));
+	const gameStore = createGameStore(emptyGrid);
 
-	
-	const gameStore = writable(
-		createGame({ sudoku: createSudoku(initialGrid) })
-	);
 
-	
-	$: displayGrid = (() => {
-		const game = $gameStore;
-		if (!game) return initialGrid;
-		const grid = game.getSudoku?.()?.getGrid?.();
-		return Array.isArray(grid) && grid.length === 9 ? grid : initialGrid;
-	})();
+// 显式提取依赖，打破 Svelte 的批处理盲区
+$: game = $gameStore; 
 
-	
-	$: if ($systemGrid && $systemGrid.length > 0) {
-		gameStore.set(createGame({ sudoku: createSudoku($systemGrid) }));
-	}
+// 下面全都依赖上面提取出来的 game 变量
+$: displayGrid = game ? game.getGrid() : emptyGrid;
+$: locked      = game ? game.getLocked() : [];
+$: conflicts   = game ? game.getConflicts() : [];
+$: solved      = game ? game.isSolved() : false;
+$: canUndo     = game ? game.canUndo() : false;
+$: canRedo     = game ? game.canRedo() : false;
 
+	// ── 监听旧 game 模块写入的 systemGrid，加载到领域对象 ────────
+	// Dropdown → game.startNew() / game.startCustom()
+	//          → grid.generate() / grid.decodeSencode()
+	//          → @sudoku/stores/grid (systemGrid) 更新
+	//          → 这里捕获，交给 gameStore.load()
+$: if ($systemGrid && $systemGrid.length > 0) {
+    console.log("检测到旧系统数据变化，准备加载...");
+    
+    // 关键魔法：加 10 毫秒延时，打破 Svelte 的死锁，等待旧系统生成完毕
+    setTimeout(() => {
+        gameStore.load($systemGrid);
+        console.log("棋盘已瞬间刷新！");
+    }, 10); 
+}
 	
+
+	// ── 统一动作入口 ──────────────────────────────────────────────
 	function handleUserAction(actionType, payload) {
-		const game = $gameStore;
-		if (!game) return;
-
-		if (actionType === 'guess') {
-			game.guess([payload.row, payload.col, payload.value]);
-		} else if (actionType === 'undo') {
-			game.undo();
-		} else if (actionType === 'redo') {
-			game.redo();
+		switch (actionType) {
+			case 'guess':
+				gameStore.guess(payload.row, payload.col, payload.value);
+				break;
+			case 'undo':
+				gameStore.undo();
+				break;
+			case 'redo':
+				gameStore.redo();
+				break;
+			case 'select':
+				cursor.set(payload.x, payload.y);
+				break;
 		}
-
-		else if(actionType === 'select') {
-			cursor.set(payload.x, payload.y);
-			return;
-		}
-
-		//响应式更新
-		gameStore.update(g => g);
 	}
 
 	onMount(() => {
@@ -70,54 +71,20 @@
 </script>
 
 <header>
-	<Header myGame={$gameStore} onAction={handleUserAction} />
+	<Header myGame={$gameStore} {canUndo} {canRedo} {solved} onAction={handleUserAction} />
 </header>
 
 <section>
-	<!-- 直接传递有效的 grid，Board 内部已做防御 -->
-	<Board grid={displayGrid} onAction={handleUserAction} />
+	<Board
+		grid={displayGrid}
+		{locked}
+		{conflicts}
+		onAction={handleUserAction}
+	/>
 </section>
 
 <footer>
-	<Controls onAction={handleUserAction} />
-=======
-	gameWon.subscribe(won => {
-		if (won) {
-			game.pause();
-			modal.show('gameover');
-		}
-	});
-
-	onMount(() => {
-		let hash = location.hash;
-
-		if (hash.startsWith('#')) {
-			hash = hash.slice(1);
-		}
-
-		let sencode;
-		if (validateSencode(hash)) {
-			sencode = hash;
-		}
-
-		modal.show('welcome', { onHide: game.resume, sencode });
-	});
-</script>
-
-<!-- Timer, Menu, etc. -->
-<header>
-	<Header />
-</header>
-
-<!-- Sudoku Field -->
-<section>
-	<Board />
-</section>
-
-<!-- Keyboard -->
-<footer>
-	<Controls />
->>>>>>> fa3bca5f205acf8b47f69f4a7e7a90476a36c48d
+	<Controls {canUndo} {canRedo} onAction={handleUserAction} />
 </footer>
 
 <Modal />

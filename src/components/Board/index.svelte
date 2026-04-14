@@ -1,5 +1,4 @@
 <script>
-<<<<<<< HEAD
     import { BOX_SIZE } from '@sudoku/constants';
     import { gamePaused } from '@sudoku/stores/game';
     import { settings } from '@sudoku/stores/settings';
@@ -7,16 +6,16 @@
     import { candidates } from '@sudoku/stores/candidates';
     import Cell from './Cell.svelte';
 
-    // 接收从 App.svelte 传下来的真实二维数组数据
     export let grid = [];
-	export let onAction = () => {};
+    export let locked = [];    // 新增：来自 Sudoku.getLocked()，标记给定格
+    export let conflicts = []; // 新增：来自 Sudoku.getConflicts()，标记冲突格
+    export let onAction = () => {};
 
-    // 判断当前光标是否在这个格子上
+    console.log("BOARD 组件成功加载了最新代码！");
     function isSelected(cursorStore, x, y) {
         return cursorStore.x === x && cursorStore.y === y;
     }
 
-    // 判断是否在同一行、同列或同一个 3x3 小宫格内
     function isSameArea(cursorStore, x, y) {
         if (cursorStore.x === null && cursorStore.y === null) return false;
         if (cursorStore.x === x || cursorStore.y === y) return true;
@@ -28,14 +27,21 @@
         return (cursorBoxX === cellBoxX && cursorBoxY === cellBoxY);
     }
 
-    // 获取当前光标所在格子的数字
     function getValueAtCursor(gridData, cursorStore) {
         if (cursorStore.x === null && cursorStore.y === null) return null;
         if (!gridData || !gridData[cursorStore.y]) return null;
         return gridData[cursorStore.y][cursorStore.x];
     }
 
-	
+    // 新增：判断某格是否在冲突列表里（conflicts 是 {row, col}[]）
+    function isConflict(x, y) {
+        return conflicts.some(c => c.row === y && c.col === x);
+    }
+
+    // 新增：判断某格是否是给定格（locked 是 boolean[][]）
+    function isLocked(x, y) {
+        return locked?.[y]?.[x] ?? false;
+    }
 </script>
 
 <div class="board-padding relative z-10">
@@ -55,14 +61,13 @@
                               candidates={$candidates[x + ',' + y]}
                               disabled={false}
                               selected={isSelected($cursor, x, y)}
-                              
-                              userNumber={true} 
-                              
+
+                              userNumber={!isLocked(x, y)}
+
                               sameArea={$settings.highlightCells && !isSelected($cursor, x, y) && isSameArea($cursor, x, y)}
-                              
                               sameNumber={$settings.highlightSame && value && !isSelected($cursor, x, y) && getValueAtCursor(grid, $cursor) === value}
-                              
-                              conflictingNumber={false} /> 
+
+                              conflictingNumber={isConflict(x, y)} />
                     {/each}
                 {/each}
             {/if}
@@ -76,68 +81,4 @@
     .board-padding {
         @apply px-4 pb-4;
     }
-=======
-	import { BOX_SIZE } from '@sudoku/constants';
-	import { gamePaused } from '@sudoku/stores/game';
-	import { grid, userGrid, invalidCells } from '@sudoku/stores/grid';
-	import { settings } from '@sudoku/stores/settings';
-	import { cursor } from '@sudoku/stores/cursor';
-	import { candidates } from '@sudoku/stores/candidates';
-	import Cell from './Cell.svelte';
-
-	function isSelected(cursorStore, x, y) {
-		return cursorStore.x === x && cursorStore.y === y;
-	}
-
-	function isSameArea(cursorStore, x, y) {
-		if (cursorStore.x === null && cursorStore.y === null) return false;
-		if (cursorStore.x === x || cursorStore.y === y) return true;
-
-		const cursorBoxX = Math.floor(cursorStore.x / BOX_SIZE);
-		const cursorBoxY = Math.floor(cursorStore.y / BOX_SIZE);
-		const cellBoxX = Math.floor(x / BOX_SIZE);
-		const cellBoxY = Math.floor(y / BOX_SIZE);
-		return (cursorBoxX === cellBoxX && cursorBoxY === cellBoxY);
-	}
-
-	function getValueAtCursor(gridStore, cursorStore) {
-		if (cursorStore.x === null && cursorStore.y === null) return null;
-
-		return gridStore[cursorStore.y][cursorStore.x];
-	}
-</script>
-
-<div class="board-padding relative z-10">
-	<div class="max-w-xl relative">
-		<div class="w-full" style="padding-top: 100%"></div>
-	</div>
-	<div class="board-padding absolute inset-0 flex justify-center">
-
-		<div class="bg-white shadow-2xl rounded-xl overflow-hidden w-full h-full max-w-xl grid" class:bg-gray-200={$gamePaused}>
-
-			{#each $userGrid as row, y}
-				{#each row as value, x}
-					<Cell {value}
-					      cellY={y + 1}
-					      cellX={x + 1}
-					      candidates={$candidates[x + ',' + y]}
-					      disabled={$gamePaused}
-					      selected={isSelected($cursor, x, y)}
-					      userNumber={$grid[y][x] === 0}
-					      sameArea={$settings.highlightCells && !isSelected($cursor, x, y) && isSameArea($cursor, x, y)}
-					      sameNumber={$settings.highlightSame && value && !isSelected($cursor, x, y) && getValueAtCursor($userGrid, $cursor) === value}
-					      conflictingNumber={$settings.highlightConflicting && $grid[y][x] === 0 && $invalidCells.includes(x + ',' + y)} />
-				{/each}
-			{/each}
-
-		</div>
-
-	</div>
-</div>
-
-<style>
-	.board-padding {
-		@apply px-4 pb-4;
-	}
->>>>>>> fa3bca5f205acf8b47f69f4a7e7a90476a36c48d
 </style>

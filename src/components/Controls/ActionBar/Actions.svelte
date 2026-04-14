@@ -8,11 +8,8 @@
 	import { keyboardDisabled } from '@sudoku/stores/keyboard';
 	import { gamePaused } from '@sudoku/stores/game';
 
-<<<<<<< HEAD
 	export let onAction = () => {};
 
-=======
->>>>>>> fa3bca5f205acf8b47f69f4a7e7a90476a36c48d
 	$: hintsAvailable = $hints > 0;
 
 	function handleHint() {
@@ -28,21 +25,13 @@
 
 <div class="action-buttons space-x-3">
 
-<<<<<<< HEAD
 	<button class="btn btn-round" disabled={$gamePaused} title="Undo" on:click={() => onAction('undo')}>
-=======
-	<button class="btn btn-round" disabled={$gamePaused} title="Undo">
->>>>>>> fa3bca5f205acf8b47f69f4a7e7a90476a36c48d
 		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
 		</svg>
 	</button>
 
-<<<<<<< HEAD
 	<button class="btn btn-round" disabled={$gamePaused} title="Redo" on:click={() => onAction('redo')}>
-=======
-	<button class="btn btn-round" disabled={$gamePaused} title="Redo">
->>>>>>> fa3bca5f205acf8b47f69f4a7e7a90476a36c48d
 		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 90 00-8 8v2M21 10l-6 6m6-6l-6-6" />
 		</svg>
