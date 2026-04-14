@@ -22,7 +22,7 @@ export function createGameStore(initialGrid) {
         /** 用户填入数字 */
         guess(row, col, value) {
             update(game => {
-                game.guess([row, col, value]);
+                game.guess({row, col, value});
                 // Svelte 需要新引用才能触发响应式更新
                 // 用 Object.assign 创建浅拷贝，保持同一个 Game 实例的语义
                 return Object.assign(Object.create(Object.getPrototypeOf(game)), game);
