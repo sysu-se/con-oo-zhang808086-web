@@ -10,6 +10,10 @@ export class Game {
         this.redoStack = redoStack;
     }
 
+    getSudoku(){
+        return this.currentSudoku;
+    }
+
     /** 供 UI 直接拿 grid 渲染，不暴露内部对象 */
     getGrid() {
         return this.currentSudoku.getGrid();
